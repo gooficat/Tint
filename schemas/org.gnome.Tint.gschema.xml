@@ -23,5 +23,15 @@
         (full filtering).
       </description>
     </key>
+    <key name="tint-color" type="s">
+      <default>"#ff0000ff"</default>
+      <summary>Tint colour</summary>
+      <description>
+        The colour applied by the tint filter, as an 8-digit hexadecimal
+        colour in the #rrggbbaa format (e.g. #ff0000ff for opaque red or
+        #80ff0000 for semi-transparent red). The alpha channel is the
+        opacity of the tint.
+      </description>
+    </key>
   </schema>
 </schemalist>

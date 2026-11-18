@@ -13,8 +13,10 @@ colour presentation.
   - **Greyscale** – desaturate the screen.
   - **Sepia** – apply a sepia tone.
   - **Invert** – invert the colours of the screen.
+  - **Tint** – apply a custom colour to the screen.
 - Adjust the filter strength (0 – 100 %, where 0 disables filtering and 100 %
   applies the filter fully).
+- Pick the tint colour with a full **RGBA** colour picker (colour and opacity).
 
 Filters are applied to the desktop content rendered by GNOME Shell and can be
 adjusted at runtime.
@@ -58,6 +60,9 @@ extensions app, or from the control centre, using the *Tint* entry.
 - **Enable** – enable or disable the colour filter.
 - **Filter** – select the colour filter to apply.
 - **Strength** – set the strength of the filter.
+- **Tint colour** – choose the colour (and opacity) applied by the tint
+  filter. The picker provides a full RGBA selection, including the alpha
+  channel, which controls the opacity of the tint.
 
 The current state is stored in the `org.gnome.Tint` GSettings schema and is
 applied immediately.

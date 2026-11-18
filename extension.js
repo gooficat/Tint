@@ -23,6 +23,7 @@ const FILTER_NONE = 'none';
 const FILTER_GREYSCALE = 'greyscale';
 const FILTER_SEPIA = 'sepia';
 const FILTER_INVERT = 'invert';
+const FILTER_TINT = 'tint';
 
 const GREYSCALE_SHADER_SOURCE = `
     uniform sampler2D tex;
@@ -65,6 +66,45 @@ const INVERT_SHADER_SOURCE = `
         cogl_color_out = vec4(mix(c.rgb, inverted, STRENGTH), c.a);
     }
 `;
+
+const TINT_SHADER_SOURCE = `
+    uniform sampler2D tex;
+    uniform float STRENGTH;
+    uniform float TINT_R;
+    uniform float TINT_G;
+    uniform float TINT_B;
+    uniform float TINT_A;
+
+    void main() {
+        vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
+        vec3 tint = vec3(TINT_R, TINT_G, TINT_B);
+        vec3 tinted = mix(c.rgb, tint, TINT_A);
+        cogl_color_out = vec4(mix(c.rgb, tinted, STRENGTH), c.a);
+    }
+`;
+
+/**
+ * Parses a hexadecimal colour of the #rrggbbaa format (e.g. #ff0000ff for
+ * opaque red or #80ff0000 for semi-transparent red) into its RGBA components.
+ */
+function parseTintColor(colorString) {
+    let r = 1;
+    let g = 1;
+    let b = 1;
+    let a = 1;
+    if (typeof colorString === 'string') {
+        const hex = colorString.replace(/^#/, '').trim();
+        if (hex.length >= 6) {
+            r = parseInt(hex.slice(0, 2), 16) / 255;
+            g = parseInt(hex.slice(2, 4), 16) / 255;
+            b = parseInt(hex.slice(4, 6), 16) / 255;
+            if (hex.length >= 8) {
+                a = parseInt(hex.slice(6, 8), 16) / 255;
+            }
+        }
+    }
+    return { r, g, b, a };
+}
 
 const GreyscaleEffect = GObject.registerClass(
 class GreyscaleEffect extends Clutter.ShaderEffect {
@@ -137,6 +177,39 @@ class InvertEffect extends Clutter.ShaderEffect {
         super.vfunc_paint_target(...args);
     }
 });
+
+const TintEffect = GObject.registerClass(
+    class TintEffect extends Clutter.ShaderEffect {
+        _init(properties) {
+            super._init();
+            this.updateEffect(properties);
+            this.set_shader_source(TINT_SHADER_SOURCE);
+        }
+
+        updateEffect(properties) {
+            this.strength = properties.strength;
+            this.tintR = properties.tintR;
+            this.tintG = properties.tintG;
+            this.tintB = properties.tintB;
+            this.tintA = properties.tintA;
+            this.queue_repaint();
+        }
+
+        vfunc_get_static_shader_source() {
+            return TINT_SHADER_SOURCE;
+        }
+
+        vfunc_paint_target(...args) {
+            this.set_uniform_value('tex', 0);
+            this.set_uniform_value('STRENGTH', this.strength);
+            this.set_uniform_value('TINT_R', this.tintR);
+            this.set_uniform_value('TINT_G', this.tintG);
+            this.set_uniform_value('TINT_B', this.tintB);
+            this.set_uniform_value('TINT_A', this.tintA);
+            super.vfunc_paint_target(...args);
+        }
+    }
+);
 
 /**
  * Renders a clone of the UI group (i.e. the desktop content) into which the
@@ -243,6 +316,11 @@ class MenuButton extends PanelMenu.Button {
         invertItem.connect('activate', () => this._onFilterSelected(FILTER_INVERT));
         this.menu.addMenuItem(invertItem);
         this._filterItems[FILTER_INVERT] = invertItem;
+
+        const tintItem = new PopupMenu.PopupMenuItem('Tint', false);
+        tintItem.connect('activate', () => this._onFilterSelected(FILTER_TINT));
+        this.menu.addMenuItem(tintItem);
+        this._filterItems[FILTER_TINT] = tintItem;
     }
 
     _onSwitchToggled() {
@@ -301,7 +379,12 @@ export default class Tint extends Extension {
     }
 
     _onSettingsChanged(key) {
-        if (key === 'enabled' || key === 'filter' || key === 'strength') {
+        if (
+            key === 'enabled' ||
+            key === 'filter' ||
+            key === 'strength' ||
+            key === 'tint-color'
+        ) {
             this._applyFilter();
         }
     }
@@ -334,6 +417,17 @@ export default class Tint extends Extension {
                 case FILTER_INVERT:
                     effect = new InvertEffect(properties);
                     break;
+                case FILTER_TINT: {
+                    const tint = parseTintColor(this._settings.get_string('tint-color'));
+                    effect = new TintEffect({
+                        strength: strength,
+                        tintR: tint.r,
+                        tintG: tint.g,
+                        tintB: tint.b,
+                        tintA: tint.a,
+                    });
+                    break;
+                }
                 default:
                     effect = null;
             }
