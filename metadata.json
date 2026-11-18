@@ -1,0 +1,19 @@
+{
+    "name": "Tint",
+    "description": "Colour filter extension for GNOME",
+    "uuid": "org.gnome.Tint",
+    "version": "1.0.0",
+    "shell-version": [
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "50",
+        "51"
+    ],
+    "url": "https://github.com/gooficat/Tint",
+    "preferences": "prefs.js",
+    "settings-schema": "org.gnome.Tint",
+    "gettext-domain": "tint"
+}

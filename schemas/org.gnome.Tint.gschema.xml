@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.Tint" path="/org/gnome/Tint/">
+    <key name="enabled" type="b">
+      <default>false</default>
+      <summary>Enable colour filter</summary>
+      <description>
+        Whether the colour filter is currently applied to the screen.
+      </description>
+    </key>
+    <key name="filter" type="s">
+      <default>"none"</default>
+      <summary>Colour filter</summary>
+      <description>
+        The colour filter that is applied to the screen.
+      </description>
+    </key>
+    <key name="strength" type="d">
+      <default>1.0</default>
+      <summary>Colour filter strength</summary>
+      <description>
+        The strength of the colour filter, between 0 (no filtering) and 1
+        (full filtering).
+      </description>
+    </key>
+  </schema>
+</schemalist>
